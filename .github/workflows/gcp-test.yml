@@ -36,4 +36,4 @@ jobs:
       - id: 'gcloud'
         name: 'gcloud'
         run: |-
-          gcloud storage list
+          gcloud storage buckets list
