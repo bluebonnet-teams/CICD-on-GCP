@@ -16,7 +16,13 @@ permissions:
 
 jobs:
   Get-OIDC-Token-and-List:
+    strategy:
+      fail-fast: false
+      matrix:
+        environment: [nonprod]
+
     runs-on: ubuntu-latest
+
     steps:
       - uses: 'actions/checkout@v4'
 
@@ -25,7 +31,8 @@ jobs:
         uses: 'google-github-actions/auth@v2'
         with:
           project_id: 'fast-tensor-430421-i4'
-          workload_identity_provider: 'projects/408970351360/locations/global/workloadIdentityPools/github-pool-nonprod/providers/github-provider-nonprod'
+          service_account: 'service-account-${{ matrix.environment }}@fast-tensor-430421-i4.iam.gserviceaccount.com'
+          workload_identity_provider: 'projects/408970351360/locations/global/workloadIdentityPools/github-pool-${{ matrix.environment }}/providers/github-provider-${{ matrix.environment }}'
       - id: 'gcloud'
         name: 'gcloud'
         run: |-
