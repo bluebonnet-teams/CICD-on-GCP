@@ -36,4 +36,5 @@ jobs:
       - id: 'gcloud'
         name: 'Run pls'
         run: |-
-          gcloud storage buckets list
+          gcloud auth login --brief --cred-file="${{ steps.auth.outputs.credentials_file_path }}"
+          gcloud services list
