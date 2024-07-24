@@ -15,7 +15,7 @@ permissions:
   contents: read
 
 jobs:
-  Get_OIDC_ID_token:
+  Get-OIDC-Token-and-List:
     runs-on: ubuntu-latest
     steps:
       - uses: 'actions/checkout@v4'
