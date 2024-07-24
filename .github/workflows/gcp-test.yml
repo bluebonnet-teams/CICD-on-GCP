@@ -1,0 +1,31 @@
+name: List services in GCP
+on:
+  pull_request:
+    types:
+      - opened
+      - reopened
+      - ready_for_review
+      - synchronize
+    branches:
+      - main
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  Get_OIDC_ID_token:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: 'actions/checkout@v4'
+
+      - id: 'auth'
+        name: 'Authenticate to GCP'
+        uses: 'google-github-actions/auth@v2'
+        with:
+          project_id: 'fast-tensor-430421-i4'
+          workload_identity_provider: 'projects/408970351360/locations/global/workloadIdentityPools/github-pool-nonprod/providers/github-provider-nonprod'
+      - id: 'gcloud'
+        name: 'gcloud'
+        run: |-
+          gcloud services list
