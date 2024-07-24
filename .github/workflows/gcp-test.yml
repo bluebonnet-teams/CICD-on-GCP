@@ -36,4 +36,5 @@ jobs:
       - id: 'gcloud'
         name: 'Run pls'
         run: |-
+          gcloud config set account ACCOUNT
           gcloud services list
