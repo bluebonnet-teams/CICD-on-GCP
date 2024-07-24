@@ -37,4 +37,5 @@ jobs:
       - id: 'gcloud'
         name: 'Run pls'
         run: |-
+          gcloud init
           gcloud services list
