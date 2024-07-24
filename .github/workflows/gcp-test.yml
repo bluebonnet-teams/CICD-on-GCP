@@ -31,7 +31,7 @@ jobs:
         uses: 'google-github-actions/auth@v2'
         with:
           project_id: 'fast-tensor-430421-i4'
-#          service_account: 'service-account-${{ matrix.environment }}@fast-tensor-430421-i4.iam.gserviceaccount.com'
+          service_account: 'service-account-${{ matrix.environment }}@fast-tensor-430421-i4.iam.gserviceaccount.com'
           workload_identity_provider: 'projects/408970351360/locations/global/workloadIdentityPools/github-pool-${{ matrix.environment }}/providers/github-provider-${{ matrix.environment }}'
       - id: 'gcloud'
         name: 'Run pls'
