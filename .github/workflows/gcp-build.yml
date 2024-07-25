@@ -42,4 +42,4 @@ jobs:
         uses: 'google-github-actions/setup-gcloud@v2'
 
       - name: 'Use gcloud CLI'
-        run: gsutil cp -r csv-data gs://csv-data-${{ matrix.environment }}-bucket
+        run: gsutil cp -r csv-data gs://csv-data-${{ github.ref_name }}-bucket
