@@ -20,19 +20,26 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        environment: [nonprod]
+        environment: [nonprod, prod]
 
     runs-on: ubuntu-latest
 
     steps:
       - uses: 'actions/checkout@v4'
 
+      - name: 'Set up Nonprod Secret'
+        if: ${{ matrix.environment }} == 'nonprod'
+        run: echo "CREDENTIALS_JSON=${{ secrets.CREDENTIALS_JSON_NONPROD }}" >> $GITHUB_ENV
+
+      - name: 'Set up Prod Secret'
+        if: ${{ matrix.environment }} == 'prod'
+        run: echo "CREDENTIALS_JSON=${{ secrets.CREDENTIALS_JSON_PROD }}" >> $GITHUB_ENV
+
       - id: 'auth'
         name: 'Authenticate to GCP'
         uses: 'google-github-actions/auth@v2'
         with:
-          credentials_json: '${{ secrets.CREDENTIALS_JSON_NONPROD }}'
-
+          credentials_json: '${{ env.CREDENTIALS_JSON }}'
 
       - name: 'Set up Cloud SDK'
         uses: 'google-github-actions/setup-gcloud@v2'
