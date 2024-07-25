@@ -38,4 +38,4 @@ jobs:
         uses: 'google-github-actions/setup-gcloud@v2'
 
       - name: 'Use gcloud CLI'
-        run: 'gcloud storage ls'
+        run: gcloud storage ls
