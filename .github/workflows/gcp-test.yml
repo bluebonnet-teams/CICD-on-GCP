@@ -39,7 +39,7 @@ jobs:
         run: |
           CREDENTIALS_JSON='${{ secrets.CREDENTIALS_JSON_NONPROD }}'
           echo "::add-mask::$CREDENTIALS_JSON"
-          echo CREDENTIALS_JSON=$CREDENTIALS_JSON >> $GITHUB_ENV
+          echo "CREDENTIALS_JSON=$CREDENTIALS_JSON" >> $GITHUB_ENV
 
       - id: 'auth'
         name: 'Authenticate to GCP'
