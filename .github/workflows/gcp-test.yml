@@ -55,10 +55,10 @@ jobs:
         uses: 'google-github-actions/setup-gcloud@v2'
 
       - name: 'Build Zip file'
-        run: zip -r zips/trigger-func-${{ matrix.environment }}.zip gcf-code
+        run: cd gcf-code && zip zips/trigger-func-${{ matrix.environment }}.zip main.py requirements.txt
 
       - name: 'List CSV Files'
         run: gsutil ls -r gs://csv-data-${{ matrix.environment }}-bucket/
 
       - name: 'Dry Run Zip Files'
-        run: gsutil rsync -d -r -n -x ".*\.gitkeep$" zips gs://zip-files-${{ matrix.environment }}-bucket
+        run: gsutil rsync -d -r -n -x ".*\.gitkeep$" gcf-code/zips gs://zip-files-${{ matrix.environment }}-bucket
