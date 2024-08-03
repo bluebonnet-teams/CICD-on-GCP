@@ -58,4 +58,4 @@ jobs:
         run: zip -r trigger-func-${{ matrix.environment }}.zip gcf-code
 
       - name: 'Use gcloud CLI'
-        run: gsutil ls -r gs://csv-data-${{ matrix.environment }}-bucket/
+        run: gsutil ls -r gs://csv-data-${{ matrix.environment }}-bucket/ gs://zip-files-${{ matrix.environment }}-bucket/
