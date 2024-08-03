@@ -61,4 +61,4 @@ jobs:
         run: gsutil ls -r gs://csv-data-${{ matrix.environment }}-bucket/
 
       - name: 'Dry Run Zip Files'
-        run: gsutil rsync -d -r -n -x ".*\.txt$" zips gs://zip-files-${{ matrix.environment }}-bucket
+        run: gsutil rsync -d -r -n -x ".*\.gitkeep$" zips gs://zip-files-${{ matrix.environment }}-bucket
