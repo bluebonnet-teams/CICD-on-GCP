@@ -55,7 +55,7 @@ jobs:
         uses: 'google-github-actions/setup-gcloud@v2'
 
       - name: 'Build Zip file'
-        run: zip zips/trigger-func-${{ matrix.environment }}.zip gcf-code/main.py gcf-code/requirements.txt
+        run: cd gcf-code && zip zips/trigger-func-${{ matrix.environment }}.zip main.py requirements.txt
 
       - name: 'List CSV Files'
         run: gsutil ls -r gs://csv-data-${{ matrix.environment }}-bucket/
