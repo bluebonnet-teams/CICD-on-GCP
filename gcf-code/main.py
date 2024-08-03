@@ -52,7 +52,13 @@ def list_blobs(bucket_name, prefix):
     # Note: Client.list_blobs requires at least package version 1.17.0.
     blobs = storage_client.list_blobs(bucket_name, prefix=prefix)
 
-    return blobs
+
+    final_blobs = []
+    for blob in blobs:
+        if blob.name.endswith(".csv"):
+            final_blobs.append(blob)
+
+    return final_blobs
 
 def process_trigger(bucket, clean_bucket, file_name):
     delim = "/"
