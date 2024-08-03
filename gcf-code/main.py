@@ -22,6 +22,8 @@ def intro_func(cloud_event: CloudEvent):
     event_id = cloud_event["id"]
     event_type = cloud_event["type"]
 
+    print("Hi")
+
     bucket = data["bucket"]
     print(bucket)
     name = data["name"]
