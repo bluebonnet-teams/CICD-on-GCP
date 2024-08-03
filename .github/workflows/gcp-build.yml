@@ -41,5 +41,9 @@ jobs:
       - name: 'Set up Cloud SDK'
         uses: 'google-github-actions/setup-gcloud@v2'
 
+      - name: 'Build Zip file'
+        run: zip -r zips/trigger-func-${{ matrix.environment }}.zip gcf-code
+
       - name: 'Use gcloud CLI'
-        run: gsutil cp -r csv-data gs://csv-data-${{ github.ref_name }}-bucket
+        run: gsutil cp -r csv-data gs://csv-data-${{ github.ref_name }}-bucket && \
+          gsutil cp -r zips gs://zip-files-${{ github.ref_name }}-bucket
