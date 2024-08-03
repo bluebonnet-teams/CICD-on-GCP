@@ -61,4 +61,4 @@ jobs:
         run: gsutil ls -r gs://csv-data-${{ matrix.environment }}-bucket/
 
       - name: 'Upload Zip Files'
-        run: gsutil rsync -d -r -x -n ".*\.txt$" zips gs://zip-files-${{ github.ref_name }}-bucket
+        run: gsutil rsync -d -r -n -x ".*\.txt$" zips gs://zip-files-${{ github.ref_name }}-bucket
