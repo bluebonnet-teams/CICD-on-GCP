@@ -57,5 +57,8 @@ jobs:
       - name: 'Build Zip file'
         run: zip -r zips/trigger-func-${{ matrix.environment }}.zip gcf-code
 
-      - name: 'Use gcloud CLI'
-        run: gsutil ls -r gs://csv-data-${{ matrix.environment }}-bucket/ && ls gs://zip-files-${{ matrix.environment }}-bucket/
+      - name: 'List CSV Files'
+        run: gsutil ls -r gs://csv-data-${{ matrix.environment }}-bucket/
+
+      - name: 'List Zip Files'
+        run: gsutil ls -r gs://zip-files-${{ matrix.envinment}}-bucket/
