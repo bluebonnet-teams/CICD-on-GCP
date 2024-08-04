@@ -22,7 +22,7 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  GCP-Test-and-List:
+  GCP-Test-Build:
     strategy:
       fail-fast: false
       matrix:

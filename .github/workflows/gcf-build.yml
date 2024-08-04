@@ -13,7 +13,7 @@ permissions:
   contents: read
 
 jobs:
-  GCP-Sync:
+  GCP-Deploy-Code:
 
     runs-on: ubuntu-latest
 
