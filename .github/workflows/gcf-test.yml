@@ -1,0 +1,63 @@
+name: Test Code Push in GCP
+on:
+  workflow_dispatch:
+  pull_request:
+    types:
+      - opened
+      - reopened
+      - ready_for_review
+      - synchronize
+    branches:
+      - nonprod
+      - prod
+    paths:
+      - 'gcf-code/**'
+
+permissions:
+  id-token: write
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  GCP-Test-Build:
+    strategy:
+      fail-fast: false
+      matrix:
+        environment: [nonprod, prod]
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: 'actions/checkout@v4'
+
+      - name: 'Set up Nonprod Secret'
+        if: matrix.environment == 'nonprod'
+        run: | 
+          CREDENTIALS_JSON='${{ secrets.CREDENTIALS_JSON_NONPROD }}'
+          echo "::add-mask::$CREDENTIALS_JSON"
+          echo "CREDENTIALS_JSON=$CREDENTIALS_JSON" >> $GITHUB_ENV
+
+      - name: 'Set up Prod Secret'
+        if: matrix.environment == 'prod'
+        run: |
+          CREDENTIALS_JSON='${{ secrets.CREDENTIALS_JSON_NONPROD }}'
+          echo "::add-mask::$CREDENTIALS_JSON"
+          echo "CREDENTIALS_JSON=$CREDENTIALS_JSON" >> $GITHUB_ENV
+
+      - id: 'auth'
+        name: 'Authenticate to GCP'
+        uses: 'google-github-actions/auth@v2'
+        with:
+          credentials_json: '${{ env.CREDENTIALS_JSON }}'
+
+      - name: 'Set up Cloud SDK'
+        uses: 'google-github-actions/setup-gcloud@v2'
+
+      - name: 'Build Zip file'
+        run: cd gcf-code && zip zips/trigger-func-${{ matrix.environment }}.zip main.py requirements.txt
+
+      - name: 'Dry Run Zip Files'
+        run: gsutil rsync -d -r -n -x ".*\.gitkeep$" gcf-code/zips gs://zip-files-${{ matrix.environment }}-bucket

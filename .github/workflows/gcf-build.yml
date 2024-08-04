@@ -1,30 +1,19 @@
-name: Test Files in GCP
+name: Push Code Changes to GCP
 on:
   workflow_dispatch:
-  pull_request:
-    types:
-      - opened
-      - reopened
-      - ready_for_review
-      - synchronize
+  push:
     branches:
       - nonprod
       - prod
+    paths:
+      - 'gcf-code/**'
 
 permissions:
   id-token: write
   contents: read
 
-concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true
-
 jobs:
-  GCP-Test-and-List:
-    strategy:
-      fail-fast: false
-      matrix:
-        environment: [nonprod, prod]
+  GCP-Deploy-Code:
 
     runs-on: ubuntu-latest
 
@@ -32,14 +21,14 @@ jobs:
       - uses: 'actions/checkout@v4'
 
       - name: 'Set up Nonprod Secret'
-        if: matrix.environment == 'nonprod'
+        if: github.ref_name == 'nonprod'
         run: | 
           CREDENTIALS_JSON='${{ secrets.CREDENTIALS_JSON_NONPROD }}'
           echo "::add-mask::$CREDENTIALS_JSON"
           echo "CREDENTIALS_JSON=$CREDENTIALS_JSON" >> $GITHUB_ENV
 
       - name: 'Set up Prod Secret'
-        if: matrix.environment == 'prod'
+        if: github.ref_name == 'prod'
         run: |
           CREDENTIALS_JSON='${{ secrets.CREDENTIALS_JSON_NONPROD }}'
           echo "::add-mask::$CREDENTIALS_JSON"
@@ -55,10 +44,7 @@ jobs:
         uses: 'google-github-actions/setup-gcloud@v2'
 
       - name: 'Build Zip file'
-        run: cd gcf-code && zip zips/trigger-func-${{ matrix.environment }}.zip main.py requirements.txt
+        run: cd gcf-code && zip zips/trigger-func-${{ github.ref_name }}.zip main.py requirements.txt
 
-      - name: 'List CSV Files'
-        run: gsutil ls -r gs://csv-data-${{ matrix.environment }}-bucket/
-
-      - name: 'Dry Run Zip Files'
-        run: gsutil rsync -d -r -n -x ".*\.gitkeep$" gcf-code/zips gs://zip-files-${{ matrix.environment }}-bucket
+      - name: 'Upload Zip Files'
+        run: gsutil rsync -d -r -x ".*\.gitkeep$" gcf-code/zips gs://zip-files-${{ github.ref_name }}-bucket

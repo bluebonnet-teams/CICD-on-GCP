@@ -22,8 +22,6 @@ def intro_func(cloud_event: CloudEvent):
     event_id = cloud_event["id"]
     event_type = cloud_event["type"]
 
-    print("Hi")
-
     bucket = data["bucket"]
     print(bucket)
     name = data["name"]
@@ -77,3 +75,5 @@ def process_trigger(bucket, clean_bucket, file_name):
     df['timestamp'] = datetime.now()
 
     df.to_parquet(f"gs://{clean_bucket}/clean_data.parquet")
+
+    return 0
