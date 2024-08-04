@@ -1,0 +1,51 @@
+name: Copy Files to GCP
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - nonprod
+      - prod
+    paths:
+      - 'csv-data/**'
+      - 'triggers/**'
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  GCP-Copy:
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: 'actions/checkout@v4'
+
+      - name: 'Set up Nonprod Secret'
+        if: github.ref_name == 'nonprod'
+        run: | 
+          CREDENTIALS_JSON='${{ secrets.CREDENTIALS_JSON_NONPROD }}'
+          echo "::add-mask::$CREDENTIALS_JSON"
+          echo "CREDENTIALS_JSON=$CREDENTIALS_JSON" >> $GITHUB_ENV
+
+      - name: 'Set up Prod Secret'
+        if: github.ref_name == 'prod'
+        run: |
+          CREDENTIALS_JSON='${{ secrets.CREDENTIALS_JSON_NONPROD }}'
+          echo "::add-mask::$CREDENTIALS_JSON"
+          echo "CREDENTIALS_JSON=$CREDENTIALS_JSON" >> $GITHUB_ENV
+
+      - id: 'auth'
+        name: 'Authenticate to GCP'
+        uses: 'google-github-actions/auth@v2'
+        with:
+          credentials_json: '${{ env.CREDENTIALS_JSON }}'
+
+      - name: 'Set up Cloud SDK'
+        uses: 'google-github-actions/setup-gcloud@v2'
+
+      - name: 'Upload CSV Files'
+        run: gsutil cp -r csv-data gs://csv-data-${{ github.ref_name }}-bucket
+
+      - name: 'Upload trigger'
+        run: gsutil cp triggers/done_with_csv.txt gs://csv-data-${{ github.ref_name }}-bucket/csv-data/done_with_csv.txt
