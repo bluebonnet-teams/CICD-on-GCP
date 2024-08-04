@@ -1,0 +1,50 @@
+name: Push Code Changes to GCP
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - nonprod
+      - prod
+    paths:
+      - 'gcf-code/**'
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  GCP-Sync:
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: 'actions/checkout@v4'
+
+      - name: 'Set up Nonprod Secret'
+        if: github.ref_name == 'nonprod'
+        run: | 
+          CREDENTIALS_JSON='${{ secrets.CREDENTIALS_JSON_NONPROD }}'
+          echo "::add-mask::$CREDENTIALS_JSON"
+          echo "CREDENTIALS_JSON=$CREDENTIALS_JSON" >> $GITHUB_ENV
+
+      - name: 'Set up Prod Secret'
+        if: github.ref_name == 'prod'
+        run: |
+          CREDENTIALS_JSON='${{ secrets.CREDENTIALS_JSON_NONPROD }}'
+          echo "::add-mask::$CREDENTIALS_JSON"
+          echo "CREDENTIALS_JSON=$CREDENTIALS_JSON" >> $GITHUB_ENV
+
+      - id: 'auth'
+        name: 'Authenticate to GCP'
+        uses: 'google-github-actions/auth@v2'
+        with:
+          credentials_json: '${{ env.CREDENTIALS_JSON }}'
+
+      - name: 'Set up Cloud SDK'
+        uses: 'google-github-actions/setup-gcloud@v2'
+
+      - name: 'Build Zip file'
+        run: cd gcf-code && zip zips/trigger-func-${{ github.ref_name }}.zip main.py requirements.txt
+
+      - name: 'Upload Zip Files'
+        run: gsutil rsync -d -r -x ".*\.gitkeep$" gcf-code/zips gs://zip-files-${{ github.ref_name }}-bucket
