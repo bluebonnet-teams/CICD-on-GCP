@@ -17,15 +17,23 @@ permissions:
   id-token: write
   contents: read
 
+# This concurrency block is unique to the test workflow in the sense that it tells GitHub that for a given
+# branch or pull request, there should only be one workflow running at a time
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
   GCP-Test-Build:
+    # This strategy allows us to run our workflow for multiple branches at the same time
     strategy:
+      # Fail-fast defaults to true, which means that if one workflow fails,
+      # GitHub will cancel the others, no matter what if they are still running.
+      # By setting it to false, we let each workflow run in parallel regardless of what happens
       fail-fast: false
+      # Here we build a collection of workflows to run
       matrix:
+        # We want to run two workflows, one for each environment listed below
         environment: [nonprod, prod]
 
     runs-on: ubuntu-latest
@@ -34,6 +42,7 @@ jobs:
       - uses: 'actions/checkout@v4'
 
       - name: 'Set up Nonprod Secret'
+        # We then use that environment variable in a different way than we do in our build workflow
         if: matrix.environment == 'nonprod'
         run: | 
           CREDENTIALS_JSON='${{ secrets.CREDENTIALS_JSON_NONPROD }}'
@@ -59,5 +68,6 @@ jobs:
       - name: 'Build Zip file'
         run: cd gcf-code && zip zips/trigger-func-${{ matrix.environment }}.zip main.py requirements.txt
 
+      # The -n flag is a dry run, so it shows you what would have happened if you synced
       - name: 'Dry Run Zip Files'
         run: gsutil rsync -d -r -n -x ".*\.gitkeep$" gcf-code/zips gs://zip-files-${{ matrix.environment }}-bucket
