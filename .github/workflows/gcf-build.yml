@@ -1,50 +1,81 @@
 name: Push Code Changes to GCP
+
+# Specify the conditions on which to trigger this workflow
 on:
+  # workflow_dispatch allows you to call the workflow ad-hoc on any branch
   workflow_dispatch:
+  # Here we specify that we also want it to trigger automatically on any push commits
   push:
+    # Here are the branches where push commits should trigger it
+    # We only want prod and nonprod
     branches:
       - nonprod
       - prod
+    # We only want to trigger where there is a push commit change to only files in this path
+    # This decouples us from the data and keeps a stable version in GCP
     paths:
       - 'gcf-code/**'
 
+# Give permissions on what the repository can access
 permissions:
   id-token: write
   contents: read
 
 jobs:
+  # Here we structure our jobs - this workflow will only have one job
   GCP-Deploy-Code:
 
+    # We run everything on the latest linux runner
+    # This is the most commonly-used runner and is easiest to integrate with most of the functionality
     runs-on: ubuntu-latest
 
+    # Here we list our steps
     steps:
+      # This action bundles together a series of steps to check out our repository at a
+      # specific commit that triggered this workflow and use that code
       - uses: 'actions/checkout@v4'
 
+      # Here we get our nonprod secret if our branch name (equal to github.ref_name) is nonprod
       - name: 'Set up Nonprod Secret'
         if: github.ref_name == 'nonprod'
+        # We also add a mask to it since the secret is sensitive
+        # Then we push it to our Github Runner environment to be used later
         run: | 
           CREDENTIALS_JSON='${{ secrets.CREDENTIALS_JSON_NONPROD }}'
           echo "::add-mask::$CREDENTIALS_JSON"
           echo "CREDENTIALS_JSON=$CREDENTIALS_JSON" >> $GITHUB_ENV
 
+      # Here we get our nonprod secret if our branch name (equal to github.ref_name) is nonprod
       - name: 'Set up Prod Secret'
         if: github.ref_name == 'prod'
+        # We also add a mask to it since the secret is sensitive
+        # Then we push it to our Github Runner environment to be used later
         run: |
           CREDENTIALS_JSON='${{ secrets.CREDENTIALS_JSON_PROD }}'
           echo "::add-mask::$CREDENTIALS_JSON"
           echo "CREDENTIALS_JSON=$CREDENTIALS_JSON" >> $GITHUB_ENV
 
+      # Here we use our credentials to authenticate to GCP so that GCP knows we are a trusted actor
       - id: 'auth'
         name: 'Authenticate to GCP'
         uses: 'google-github-actions/auth@v2'
         with:
           credentials_json: '${{ env.CREDENTIALS_JSON }}'
 
+      # Here we set up the Software Development Kit (SDK) to work with GCP
       - name: 'Set up Cloud SDK'
         uses: 'google-github-actions/setup-gcloud@v2'
 
+      # Here we change directories to gcf-code so that when we zip our files,
+      # we don't have gcf-code in our zip directory. Without the cd command, our zip would not work.
+      # Then build a zip of our code of only the two files we need and give the zip an env-specific name
+      # Adding && between commands allows you to chain them
       - name: 'Build Zip file'
         run: cd gcf-code && zip zips/trigger-func-${{ github.ref_name }}.zip main.py requirements.txt
 
+      # Use gsutil to sync the zips folder with our zips bucket
+      # -d flag means mirror completely
+      # -r means recursive so it mirrors every file in the directory
+      # -x ".*\.gitkeep$" excludes the `.gitkeep` file that we used to keep a blank folder in our repo
       - name: 'Upload Zip Files'
         run: gsutil rsync -d -r -x ".*\.gitkeep$" gcf-code/zips gs://zip-files-${{ github.ref_name }}-bucket
