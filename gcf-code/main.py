@@ -91,5 +91,5 @@ def process_trigger(bucket, clean_bucket, file_name):
     # Save the data in the clean bucket
     df.to_parquet(f"gs://{clean_bucket}/clean_data.parquet")
 
-    # Return 0 upon success
+    # Return 0 if all is a success
     return 0
