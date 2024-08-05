@@ -44,7 +44,7 @@ jobs:
       - name: 'Set up Prod Secret'
         if: matrix.environment == 'prod'
         run: |
-          CREDENTIALS_JSON='${{ secrets.CREDENTIALS_JSON_NONPROD }}'
+          CREDENTIALS_JSON='${{ secrets.CREDENTIALS_JSON_PROD }}'
           echo "::add-mask::$CREDENTIALS_JSON"
           echo "CREDENTIALS_JSON=$CREDENTIALS_JSON" >> $GITHUB_ENV
 
